@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Details #{{ order.id }} | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 60px; max-width: 900px;">
+    <!-- Breadcrumbs -->
+    <nav style="font-size: 0.9rem; margin-bottom: 25px; color: var(--text-muted);">
+        <a href="{% url 'home' %}">Home</a> &nbsp;/&nbsp;
+        <a href="{% url 'profile' %}">Dashboard</a> &nbsp;/&nbsp;
+        <span style="color: var(--bg-dark); font-weight: 500;">Order #{{ order.id }}</span>
+    </nav>
+
+    <!-- Details card -->
+    <div style="background-color: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 40px; box-shadow: var(--card-shadow);" id="orderDetailPanel">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px;">
+            <div>
+                <h1 style="font-size: 1.8rem; color: var(--bg-dark); margin-bottom: 5px;">Order Details</h1>
+                <p style="color: var(--text-muted); font-size: 0.95rem;">Placed on {{ order.created_at|date:"F d, Y - P" }}</p>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Status</span>
+                {% if order.order_status == 'Pending' %}
+                    <span style="background-color: #fef3c7; color: #d97706; padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 700;">Pending</span>
+                {% elif order.order_status == 'Confirmed' or order.order_status == 'Processing' %}
+                    <span style="background-color: #e0f2fe; color: #0284c7; padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 700;">{{ order.order_status }}</span>
+                {% elif order.order_status == 'Shipped' %}
+                    <span style="background-color: #dbeafe; color: #2563eb; padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 700;">Shipped</span>
+                {% elif order.order_status == 'Delivered' %}
+                    <span style="background-color: #dcfce7; color: #16a34a; padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 700;">Delivered</span>
+                {% else %}
+                    <span style="background-color: #fee2e2; color: #dc2626; padding: 6px 16px; border-radius: 50px; font-size: 0.9rem; font-weight: 700;">{{ order.order_status }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px;" id="orderInfoGrid">
+            <div>
+                <h3 style="font-size: 1.1rem; margin-bottom: 12px; font-weight: 700;">Shipping Information</h3>
+                <p style="font-size: 0.95rem; color: #475569; line-height: 1.6;">
+                    <strong>{{ order.get_full_name }}</strong><br>
+                    {{ order.address }}<br>
+                    {{ order.city }}, {{ order.province }}<br>
+                    Pakistan - {{ order.postal_code }}
+                </p>
+            </div>
+            <div>
+                <h3 style="font-size: 1.1rem; margin-bottom: 12px; font-weight: 700;">Payment & Contacts</h3>
+                <p style="font-size: 0.95rem; color: #475569; line-height: 1.6;">
+                    <strong>Payment Method:</strong> {{ order.payment_method }}<br>
+                    <strong>Email:</strong> {{ order.email }}<br>
+                    <strong>Phone:</strong> {{ order.phone }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">Items Summary</h3>
+        <table style="width: 100%; border-collapse: collapse; text-align: left; margin-bottom: 30px;" class="cart-table">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-size: 0.9rem;">
+                    <th style="padding: 10px 0; font-weight: 600;">Product</th>
+                    <th style="padding: 10px 0; font-weight: 600;">Price</th>
+                    <th style="padding: 10px 0; font-weight: 600; text-align: center;">Quantity</th>
+                    <th style="padding: 10px 0; font-weight: 600; text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 15px 0;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background-color: #f1f5f9;">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=50" alt="Placeholder" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px; background-color: #f1f5f9;">
+                                {% endif %}
+                                <strong style="font-weight: 600;"><a href="{{ item.product.get_absolute_url }}">{{ item.product.name }}</a></strong>
+                            </div>
+                        </td>
+                        <td style="padding: 15px 0; color: #475569;">Rs. {{ item.price }}</td>
+                        <td style="padding: 15px 0; text-align: center; color: #475569;">{{ item.quantity }}</td>
+                        <td style="padding: 15px 0; text-align: right; font-weight: 700; color: var(--bg-dark);">Rs. {{ item.get_cost }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Total Cost -->
+        <div style="display: flex; justify-content: flex-end; font-size: 1.25rem;">
+            <div style="width: 320px; display: flex; justify-content: space-between; border-top: 2px solid var(--border-color); padding-top: 15px;">
+                <strong>Grand Total:</strong>
+                <strong>Rs. {{ order.total_price }}</strong>
+            </div>
+        </div>
+
+        <div style="margin-top: 40px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <a href="{% url 'profile' %}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--bg-dark); font-weight: 600; font-size: 0.95rem;">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

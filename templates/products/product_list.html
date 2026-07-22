@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Spark Sports Shop | Explore Pakistani Cricket Gear{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 60px;">
+    <!-- Catalog Header -->
+    <div class="section-header" style="margin-bottom: 30px;">
+        <div class="section-title">
+            {% if selected_category %}
+                <h2>{{ selected_category.name }}</h2>
+                <p>{{ selected_category.description|default:"Browse high-performance sports equipment." }}</p>
+            {% else %}
+                <h2>Shop Cricket Equipment</h2>
+                <p>Equip yourself with premium gear hand-crafted for elite performance.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Catalog Layout -->
+    <div style="display: grid; grid-template-columns: 280px 1fr; gap: 40px;" id="catalogGrid">
+        
+        <!-- Sidebar Filter controls -->
+        <aside style="background-color: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; box-shadow: var(--card-shadow); height: max-content;" id="catalogFilterSidebar">
+            <h3 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Filters</h3>
+            
+            <!-- Category filter list -->
+            <div style="margin-bottom: 24px;">
+                <h4 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;">Categories</h4>
+                <ul style="list-style: none;">
+                    <li style="margin-bottom: 8px;">
+                        <a href="{% url 'products:product_list' %}" style="font-weight: {% if not selected_category %}700; color: var(--accent-hover){% else %}500{% endif %}; font-size: 0.95rem;">
+                            All Categories
+                        </a>
+                    </li>
+                    {% for cat in categories %}
+                        <li style="margin-bottom: 8px;">
+                            <a href="{% url 'products:product_list' %}?category={{ cat.slug }}" style="font-weight: {% if selected_category.id == cat.id %}700; color: var(--accent-hover){% else %}500{% endif %}; font-size: 0.95rem;">
+                                {{ cat.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Price & Sorting Form -->
+            <form action="{% url 'products:product_list' %}" method="get" id="filterForm">
+                {% if category_slug %}
+                    <input type="hidden" name="category" value="{{ category_slug }}">
+                {% endif %}
+                {% if request.GET.q %}
+                    <input type="hidden" name="q" value="{{ request.GET.q }}">
+                {% endif %}
+
+                <!-- Sort Control -->
+                <div style="margin-bottom: 24px;">
+                    <label for="sortSelector" style="display: block; font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 10px;">Sort By</label>
+                    <select name="sort" id="sortSelector" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: white;" onchange="this.form.submit()">
+                        <option value="newest" {% if sort_by == 'newest' or not sort_by %}selected{% endif %}>Newest Arrivals</option>
+                        <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                        <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                    </select>
+                </div>
+
+                <!-- Price range fields -->
+                <div style="margin-bottom: 24px;">
+                    <h4 style="font-size: 0.95rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 12px;">Price Range (Rs.)</h4>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 15px;">
+                        <input type="number" name="price_min" placeholder="Min" value="{{ price_min|default:'' }}" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px;" aria-label="Min Price">
+                        <span style="color: var(--text-muted);">-</span>
+                        <input type="number" name="price_max" placeholder="Max" value="{{ price_max|default:'' }}" style="width: 100%; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 6px;" aria-label="Max Price">
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: 100%; text-align: center; font-size: 0.9rem; padding: 10px; box-shadow: none;">Apply Filters</button>
+                </div>
+                
+                {% if price_min or price_max or sort_by %}
+                    <a href="{% url 'products:product_list' %}{% if category_slug %}?category={{ category_slug }}{% endif %}" style="display: block; text-align: center; color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-top: 10px;">Clear Filters</a>
+                {% endif %}
+            </form>
+        </aside>
+
+        <!-- Product Grid Display -->
+        <main>
+            {% if products %}
+                <div class="products-grid">
+                    {% for product in products %}
+                        <div class="product-card" id="prodCard-{{ product.id }}">
+                            <div class="product-image-container">
+                                {% if product.discount_price and product.discount_price < product.price %}
+                                    <span class="badge-tag sale">Sale</span>
+                                {% elif product.featured %}
+                                    <span class="badge-tag">Featured</span>
+                                {% endif %}
+                                <a href="{{ product.get_absolute_url }}">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                    {% else %}
+                                        <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=400" alt="Cricket Gear Product Placeholder">
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <div class="product-details">
+                                <span class="product-category">{{ product.category.name }}</span>
+                                <h3 class="product-title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h3>
+                                <div class="product-price-row">
+                                    {% if product.discount_price and product.discount_price < product.price %}
+                                        <span class="price">Rs. {{ product.get_price }}</span>
+                                        <span class="original-price">Rs. {{ product.price }}</span>
+                                    {% else %}
+                                        <span class="price">Rs. {{ product.price }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="product-card-footer">
+                                    <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn-card-add">
+                                            <i class="fa-solid fa-shopping-cart"></i> Add to Cart
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination Component -->
+                {% if products.has_other_pages %}
+                    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 50px;">
+                        {% if products.has_previous %}
+                            <a href="?page={{ products.previous_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" style="padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; background-color: white; font-weight: 600;">
+                                <i class="fa-solid fa-chevron-left"></i> Previous
+                            </a>
+                        {% endif %}
+                        
+                        {% for i in products.paginator.page_range %}
+                            {% if products.number == i %}
+                                <span style="padding: 10px 16px; border: 1px solid var(--bg-dark); border-radius: 6px; background-color: var(--bg-dark); color: var(--accent); font-weight: 700;">
+                                    {{ i }}
+                                </span>
+                            {% else %}
+                                <a href="?page={{ i }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" style="padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; background-color: white;">
+                                    {{ i }}
+                                </a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if products.has_next %}
+                            <a href="?page={{ products.next_page_number }}{% if category_slug %}&category={{ category_slug }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if price_min %}&price_min={{ price_min }}{% endif %}{% if price_max %}&price_max={{ price_max }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" style="padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; background-color: white; font-weight: 600;">
+                                Next <i class="fa-solid fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <div style="text-align: center; padding: 80px 0; background-color: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow);">
+                    <i class="fa-regular fa-folder-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.5rem; margin-bottom: 8px;">No Products Found</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 24px;">We couldn't find any products matching your query.</p>
+                    <a href="{% url 'products:product_list' %}" class="btn-primary" style="box-shadow: none;">Show All Products</a>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

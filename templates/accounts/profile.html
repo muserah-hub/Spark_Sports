@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Dashboard | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 60px;">
+    <!-- Profile Dashboard Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; border-bottom: 2px solid var(--border-color); padding-bottom: 20px;" id="profileHeader">
+        <div>
+            <h1 style="font-size: 2.2rem; color: var(--bg-dark);">Welcome, {{ user.username }}!</h1>
+            <p style="color: var(--text-muted);">View your order history, delivery status, and sports nutrition updates.</p>
+        </div>
+        <div>
+            <a href="{% url 'logout' %}" class="btn-secondary" style="border-color: #ef4444; color: #ef4444; margin-left: 0; padding: 10px 24px;" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 320px 1fr; gap: 40px;" id="profileLayout">
+        <!-- Left Column: User details card -->
+        <aside style="background-color: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 30px; box-shadow: var(--card-shadow); height: max-content;" id="profileSidebar">
+            <h3 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">User Details</h3>
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">Username</span>
+                    <strong style="font-size: 1.1rem; color: var(--bg-dark);">{{ user.username }}</strong>
+                </div>
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">Email Address</span>
+                    <strong style="font-size: 1.1rem; color: var(--bg-dark);">{{ user.email }}</strong>
+                </div>
+                <div>
+                    <span style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block;">Joined On</span>
+                    <strong style="font-size: 1.1rem; color: var(--bg-dark);">{{ user.date_joined|date:"F d, Y" }}</strong>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Column: Order History list -->
+        <main>
+            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;"><i class="fa-solid fa-clock-rotate-left"></i> Order History</h2>
+            
+            {% if orders %}
+                <div style="background-color: white; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: var(--card-shadow);" id="ordersCardTable">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left;" class="profile-orders-table">
+                        <thead>
+                            <tr style="background-color: #f8fafc; border-bottom: 2px solid var(--border-color);">
+                                <th style="padding: 16px 20px; font-weight: 600; color: var(--text-muted);">Order #</th>
+                                <th style="padding: 16px 20px; font-weight: 600; color: var(--text-muted);">Date</th>
+                                <th style="padding: 16px 20px; font-weight: 600; color: var(--text-muted);">Total</th>
+                                <th style="padding: 16px 20px; font-weight: 600; color: var(--text-muted);">Status</th>
+                                <th style="padding: 16px 20px; font-weight: 600; color: var(--text-muted); text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr style="border-bottom: 1px solid var(--border-color);" id="order-row-{{ order.id }}">
+                                    <td style="padding: 16px 20px; font-weight: 700;">#{{ order.id }}</td>
+                                    <td style="padding: 16px 20px; color: #475569;">{{ order.created_at|date:"M d, Y - P" }}</td>
+                                    <td style="padding: 16px 20px; font-weight: 600; color: var(--bg-dark);">Rs. {{ order.total_price }}</td>
+                                    <td style="padding: 16px 20px;">
+                                        <!-- Styled status pills -->
+                                        {% if order.order_status == 'Pending' %}
+                                            <span style="background-color: #fef3c7; color: #d97706; padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">Pending</span>
+                                        {% elif order.order_status == 'Confirmed' or order.order_status == 'Processing' %}
+                                            <span style="background-color: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">{{ order.order_status }}</span>
+                                        {% elif order.order_status == 'Shipped' %}
+                                            <span style="background-color: #dbeafe; color: #2563eb; padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">Shipped</span>
+                                        {% elif order.order_status == 'Delivered' %}
+                                            <span style="background-color: #dcfce7; color: #16a34a; padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">Delivered</span>
+                                        {% else %}
+                                            <span style="background-color: #fee2e2; color: #dc2626; padding: 4px 10px; border-radius: 50px; font-size: 0.8rem; font-weight: 600;">{{ order.order_status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 16px 20px; text-align: right;">
+                                        <a href="{% url 'orders:order_detail' order.id %}" class="btn-login" style="padding: 6px 14px; font-size: 0.85rem;" id="viewOrderDetailLink-{{ order.id }}">View Details</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 60px 0; background-color: white; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--card-shadow);" id="noOrdersState">
+                    <i class="fa-solid fa-basket-shopping" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 20px;"></i>
+                    <h3 style="font-size: 1.3rem; margin-bottom: 8px;">No Orders Yet</h3>
+                    <p style="color: var(--text-muted); margin-bottom: 24px;">Your order list is empty. Gear up for your next game by checking out our products!</p>
+                    <a href="{% url 'products:product_list' %}" class="btn-primary" style="box-shadow: none;" id="shopLinkFromProfile">Visit the Shop</a>
+                </div>
+            {% endif %}
+        </main>
+    </div>
+</div>
+{% endblock %}

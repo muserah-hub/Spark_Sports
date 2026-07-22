@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 60px;">
+    <!-- Header -->
+    <div class="section-header" style="margin-bottom: 30px;">
+        <div class="section-title">
+            <h2>Secure Checkout</h2>
+            <p>Please enter your shipment details to complete your order.</p>
+        </div>
+    </div>
+
+    <!-- Checkout columns -->
+    <div class="cart-wrapper" id="checkoutLayout">
+        
+        <!-- Left: Delivery Information Form -->
+        <div class="cart-table-card" id="checkoutFormCard">
+            <h3 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Delivery Address</h3>
+            
+            <form method="post" id="checkoutForm">
+                {% csrf_token %}
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label" for="id_first_name">First Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.first_name.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_last_name">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.last_name.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label" for="id_email">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.email.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_phone">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.phone.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="id_address">Complete Street Address</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.address.errors.0 }}</span>{% endif %}
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.2fr 1.2fr 0.8fr; gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label" for="id_city">City</label>
+                        {{ form.city }}
+                        {% if form.city.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.city.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_province">Province</label>
+                        {{ form.province }}
+                        {% if form.province.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.province.errors.0 }}</span>{% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="id_postal_code">Postal Code</label>
+                        {{ form.postal_code }}
+                        {% if form.postal_code.errors %}<span style="color: #ef4444; font-size: 0.8rem;">{{ form.postal_code.errors.0 }}</span>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Payment Option selection -->
+                <div style="margin-top: 30px; background-color: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px;">
+                    <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-credit-card"></i> Payment Method</h4>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="radio" id="codMethod" name="payment_method_option" value="cod" checked style="width: 18px; height: 18px; accent-color: var(--bg-dark);">
+                        <label for="codMethod" style="font-weight: 600; cursor: pointer; color: var(--bg-dark);">Cash on Delivery (COD)</label>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px; margin-left: 28px;">Pay with cash upon delivery of your cricket package at your doorstep.</p>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <button type="submit" class="btn-primary btn-block" style="text-align: center; border: none; cursor: pointer; padding: 14px 0; font-size: 1.05rem;" id="checkoutSubmitBtn">Place Order (COD)</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right: Order items review -->
+        <div class="cart-summary-card" id="checkoutSummaryCard">
+            <h3 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Review Your Items</h3>
+            
+            <!-- Items scroll list -->
+            <div style="max-height: 240px; overflow-y: auto; margin-bottom: 20px; display: flex; flex-direction: column; gap: 12px; padding-right: 5px;">
+                {% for item in cart %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;" id="checkout-item-{{ item.product.id }}">
+                        <div style="display: flex; align-items: center; gap: 10px; max-width: 70%;">
+                            {% if item.product.image %}
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">
+                            {% else %}
+                                <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=50" alt="Placeholder" style="width: 45px; height: 45px; object-fit: cover; border-radius: 4px;">
+                            {% endif %}
+                            <div>
+                                <span style="font-weight: 600; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ item.product.name }}</span>
+                                <span style="color: var(--text-muted);">Qty: {{ item.quantity }}</span>
+                            </div>
+                        </div>
+                        <strong style="color: var(--bg-dark);">Rs. {{ item.total_price }}</strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Totals block -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Subtotal</span>
+                    <strong style="color: var(--bg-dark);">Rs. {{ cart.get_subtotal_price }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Shipping</span>
+                    {% if cart.get_shipping_price == 0 %}
+                        <strong style="color: #22c55e;">FREE</strong>
+                    {% else %}
+                        <strong style="color: var(--bg-dark);">Rs. {{ cart.get_shipping_price }}</strong>
+                    {% endif %}
+                </div>
+                <div class="summary-row total">
+                    <span>Grand Total</span>
+                    <span>Rs. {{ cart.get_total_price }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

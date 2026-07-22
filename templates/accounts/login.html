@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Account Login | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-wrapper" id="loginPanel">
+        <h2 class="auth-title">Welcome Back</h2>
+        <p class="auth-subtitle">Login to access your profile, order history, and coaching support.</p>
+        
+        <form method="post" id="loginForm">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label class="form-label" for="id_username">Username</label>
+                <input type="text" name="username" id="id_username" class="form-control" placeholder="Enter your username" required autofocus>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="id_password">Password</label>
+                <input type="password" name="password" id="id_password" class="form-control" placeholder="Enter your password" required>
+            </div>
+            
+            <button type="submit" class="btn-primary btn-block" style="border: none; cursor: pointer; padding: 12px 0; font-size: 1rem;" id="loginSubmitBtn">Login</button>
+        </form>
+        
+        <div class="auth-link">
+            Don't have an account? <a href="{% url 'register' %}" id="switchToRegisterLink">Register here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

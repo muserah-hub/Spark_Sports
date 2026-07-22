@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Success | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 60px; padding-bottom: 80px; max-width: 800px;">
+    <!-- Confirmation message card -->
+    <div style="background-color: white; border: 1px solid var(--border-color); border-radius: 12px; padding: 40px; box-shadow: var(--card-shadow); text-align: center;" id="successCard">
+        <div style="width: 80px; height: 80px; background-color: #dcfce7; color: #16a34a; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 20px;" id="successCheckIcon">
+            <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--bg-dark); margin-bottom: 10px;">Thank You for Your Order!</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 30px;">Your order has been successfully placed and is being processed by Spark Sports.</p>
+        
+        <!-- Summary detail box -->
+        <div style="border: 1px solid var(--border-color); border-radius: 8px; text-align: left; padding: 25px; background-color: #f8fafc; margin-bottom: 35px;" id="orderSummaryBox">
+            <h3 style="font-size: 1.15rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <span>Order Summary Details</span>
+                <span style="color: var(--text-muted); font-size: 0.95rem;">Order Reference: <strong>#{{ order.id }}</strong></span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.95rem; margin-bottom: 20px;">
+                <div>
+                    <span style="display: block; color: var(--text-muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase;">Ship To</span>
+                    <strong>{{ order.get_full_name }}</strong>
+                    <span style="display: block; color: #475569; margin-top: 4px;">{{ order.address }}, {{ order.city }}</span>
+                    <span style="display: block; color: #475569;">{{ order.province }} - {{ order.postal_code }}</span>
+                </div>
+                <div>
+                    <span style="display: block; color: var(--text-muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase;">Contact Info</span>
+                    <strong>{{ order.phone }}</strong>
+                    <span style="display: block; color: #475569; margin-top: 4px;">{{ order.email }}</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 0.95rem; border-top: 1px solid var(--border-color); padding-top: 15px; margin-bottom: 20px;">
+                <div>
+                    <span style="display: block; color: var(--text-muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase;">Payment Method</span>
+                    <strong>{{ order.payment_method }}</strong>
+                </div>
+                <div>
+                    <span style="display: block; color: var(--text-muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase;">Order Status</span>
+                    <strong style="color: #d97706;">{{ order.order_status }}</strong>
+                </div>
+            </div>
+
+            <!-- Items Ordered list -->
+            <div style="border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <span style="display: block; color: var(--text-muted); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px;">Items Ordered</span>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    {% for item in order.items.all %}
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;">
+                            <span>{{ item.quantity }} x {{ item.product.name }}</span>
+                            <strong>Rs. {{ item.get_cost }}</strong>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="border-top: 2px solid var(--border-color); padding-top: 15px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; font-size: 1.15rem;">
+                <strong>Grand Total Paid (COD):</strong>
+                <strong style="color: var(--bg-dark);">Rs. {{ order.total_price }}</strong>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; justify-content: center;" id="successButtons">
+            <a href="{% url 'products:product_list' %}" class="btn-primary" style="box-shadow: none;" id="successShopMoreLink">Continue Shopping</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="btn-secondary" style="margin-left: 0;" id="successDashboardLink">Go to Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
