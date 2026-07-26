@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Spark Sports{% endblock %}
+{% block meta_description %}{{ product.description|truncatewords:25 }}{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 60px;">
+    <!-- Breadcrumbs -->
+    <nav style="font-size: 0.9rem; margin-bottom: 25px; color: var(--text-muted);">
+        <a href="{% url 'home' %}">Home</a> &nbsp;/&nbsp;
+        <a href="{% url 'products:product_list' %}">Shop</a> &nbsp;/&nbsp;
+        <a href="{% url 'products:product_list' %}?category={{ product.category.slug }}">{{ product.category.name }}</a> &nbsp;/&nbsp;
+        <span style="color: var(--bg-dark); font-weight: 500;">{{ product.name }}</span>
+    </nav>
+
+    <!-- Product Layout Grid -->
+    <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 50px; background-color: white; border-radius: 12px; border: 1px solid var(--border-color); padding: 40px; box-shadow: var(--card-shadow); margin-bottom: 60px;" id="productDetailCard">
+        
+        <!-- Left: Image column -->
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div style="background-color: #f1f5f9; border-radius: 8px; border: 1px solid var(--border-color); height: 460px; overflow: hidden; display: flex; align-items: center; justify-content: center;" id="detailImgBox">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=600" alt="Product Placeholder" style="width: 100%; height: 100%; object-fit: cover;">
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Details column -->
+        <div style="display: flex; flex-direction: column;" id="detailMetaBox">
+            <span style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 8px;">{{ product.category.name }}</span>
+            <h1 style="font-size: 2.2rem; font-weight: 800; color: var(--bg-dark); margin-bottom: 15px; line-height: 1.2;">{{ product.name }}</h1>
+            
+            <!-- Price Display -->
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+                {% if product.discount_price and product.discount_price < product.price %}
+                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--bg-dark);">Rs. {{ product.get_price }}</span>
+                    <span style="font-size: 1.2rem; text-decoration: line-through; color: var(--text-muted);">Rs. {{ product.price }}</span>
+                    <span style="background-color: #ef4444; color: white; font-size: 0.8rem; font-weight: 700; padding: 4px 10px; border-radius: 4px;">Save Rs. {{ product.saving_amount|floatformat:0 }}</span>
+                {% else %}
+                    <span style="font-size: 1.8rem; font-weight: 800; color: var(--bg-dark);">Rs. {{ product.price }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Stock status warning -->
+            <div style="margin-bottom: 25px;">
+                {% if product.is_in_stock %}
+                    <span style="color: #22c55e; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-circle-check"></i> In Stock ({{ product.stock }} units available)
+                    </span>
+                {% else %}
+                    <span style="color: #ef4444; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-circle-xmark"></i> Out of Stock
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div style="border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 20px 0; margin-bottom: 25px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 10px;">Product Description</h3>
+                <p style="color: #475569; font-size: 0.95rem; line-height: 1.6;">{{ product.description|default:"No description available." }}</p>
+            </div>
+
+            <!-- Purchase Controls (Only show if in stock) -->
+            {% if product.is_in_stock %}
+                <form action="{% url 'cart:cart_add' product.id %}" method="post" style="display: flex; gap: 15px; margin-bottom: 20px;" id="detailCartForm">
+                    {% csrf_token %}
+                    <!-- Quantity selector -->
+                    <div class="quantity-controls">
+                        <button type="button" class="quantity-btn" onclick="decrementQty()" aria-label="Decrease">&minus;</button>
+                        <input type="number" name="quantity" id="detailQtyInput" class="quantity-input" value="1" min="1" max="{{ product.stock }}" readonly>
+                        <button type="button" class="quantity-btn" onclick="incrementQty()" aria-label="Increase">&plus;</button>
+                    </div>
+
+                    <!-- Add to Cart button -->
+                    <button type="submit" class="btn-primary" style="flex-grow: 1; text-align: center; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-shopping-cart"></i> Add to Cart
+                    </button>
+                </form>
+            {% else %}
+                <button class="btn-secondary" style="margin-bottom: 20px; cursor: not-allowed; opacity: 0.6; text-align: center;" disabled>Sold Out</button>
+            {% endif %}
+
+            <!-- Interactive Spark AI product context button -->
+            <button type="button" class="btn-secondary" id="askAiBtn" style="border-color: var(--bg-dark); color: var(--bg-dark); display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; width: 100%;" onclick="askSparkAIAboutProduct('{{ product.name|escapejs }}', '{{ product.category.name|escapejs }}', '{{ product.get_price|escapejs }}')">
+                <i class="fa-solid fa-bolt" style="color: var(--accent-hover);"></i> Ask Spark AI about this product
+            </button>
+        </div>
+    </div>
+
+    <!-- Related Products -->
+    {% if related_products %}
+        <section id="relatedProducts">
+            <div class="section-header" style="margin-bottom: 30px;">
+                <div class="section-title">
+                    <h2>Related Products</h2>
+                    <p>Complete your cricket kit with these matching gear options.</p>
+                </div>
+            </div>
+            <div class="products-grid">
+                {% for prod in related_products %}
+                    <div class="product-card" id="prodCard-{{ prod.id }}">
+                        <div class="product-image-container">
+                            {% if prod.discount_price and prod.discount_price < prod.price %}
+                                <span class="badge-tag sale">Sale</span>
+                            {% endif %}
+                            <a href="{{ prod.get_absolute_url }}">
+                                {% if prod.image %}
+                                    <img src="{{ prod.image.url }}" alt="{{ prod.name }}">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=400" alt="Related Product Placeholder">
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="product-details">
+                            <span class="product-category">{{ prod.category.name }}</span>
+                            <h3 class="product-title"><a href="{{ prod.get_absolute_url }}">{{ prod.name }}</a></h3>
+                            <div class="product-price-row">
+                                {% if prod.discount_price and prod.discount_price < prod.price %}
+                                    <span class="price">Rs. {{ prod.get_price }}</span>
+                                    <span class="original-price">Rs. {{ prod.price }}</span>
+                                {% else %}
+                                    <span class="price">Rs. {{ prod.price }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-card-footer">
+                                <form action="{% url 'cart:cart_add' prod.id %}" method="post">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn-card-add">Add to Cart</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // --- Detail Quantity Increments ---
+    const qtyInput = document.getElementById('detailQtyInput');
+    const maxStock = parseInt("{{ product.stock|default:0 }}");
+
+    function incrementQty() {
+        if (!qtyInput) return;
+        let val = parseInt(qtyInput.value);
+        if (val < maxStock) {
+            qtyInput.value = val + 1;
+        }
+    }
+
+    function decrementQty() {
+        if (!qtyInput) return;
+        let val = parseInt(qtyInput.value);
+        if (val > 1) {
+            qtyInput.value = val - 1;
+        }
+    }
+
+    // --- Product Context Sender for Spark AI Chatbot ---
+    function askSparkAIAboutProduct(name, category, price) {
+        // Open the chat box
+        const panel = document.getElementById('chatbotPanel');
+        if (panel) {
+            panel.classList.add('open');
+        }
+
+        // Set global JavaScript context parameters for the product
+        window.sparkProductContext = {
+            name: name,
+            category: category,
+            price: price
+        };
+
+        // Scroll to the bottom of the chat body
+        const chatBody = document.getElementById('chatBody');
+        
+        // Construct and insert context notification message inside the chat log
+        const contextDiv = document.createElement('div');
+        contextDiv.className = 'chat-message bot';
+        contextDiv.style.borderLeft = '4px solid var(--accent)';
+        contextDiv.style.backgroundColor = '#f0fdf4';
+        contextDiv.innerHTML = `
+            <p><strong>Product Context Loaded:</strong></p>
+            <p style="font-size: 0.85rem; color: #15803d; font-weight: 600; margin-top: 4px;">🏏 ${name} (${category}) — Rs. ${price}</p>
+            <p style="margin-top: 8px;">I am now ready to answer your questions about this product. Try asking me:</p>
+            <ul style="margin-left: 15px; margin-top: 4px; font-size: 0.8rem;">
+                <li><em>"Is this product suitable for beginners?"</em></li>
+                <li><em>"What is it made of?"</em></li>
+                <li><em>"Is it in stock?"</em></li>
+            </ul>
+        `;
+        
+        const timeDiv = document.createElement('div');
+        timeDiv.className = 'chat-message-time';
+        timeDiv.innerText = 'Just now';
+        contextDiv.appendChild(timeDiv);
+
+        chatBody.appendChild(contextDiv);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    }
+</script>
+{% endblock %}

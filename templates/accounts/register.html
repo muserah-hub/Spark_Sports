@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create an Account | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="auth-wrapper" id="registerPanel">
+        <h2 class="auth-title">Join Spark Sports</h2>
+        <p class="auth-subtitle">Create an account to track orders and save shipping preferences.</p>
+        
+        <form method="post" id="registerForm">
+            {% csrf_token %}
+            
+            {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}
+                            <span style="color: #ef4444; font-size: 0.8rem; display: block; margin-top: 4px;">{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn-primary btn-block" style="border: none; cursor: pointer; padding: 12px 0; font-size: 1rem;" id="registerSubmitBtn">Register Now</button>
+        </form>
+        
+        <div class="auth-link">
+            Already have an account? <a href="{% url 'login' %}" id="switchToLoginLink">Login here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

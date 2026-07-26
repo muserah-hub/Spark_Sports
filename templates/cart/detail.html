@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart | Spark Sports{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 40px; padding-bottom: 60px;">
+    <!-- Page title -->
+    <div class="section-header" style="margin-bottom: 30px;">
+        <div class="section-title">
+            <h2>Your Shopping Cart</h2>
+            <p>Review the products and quantities before heading to checkout.</p>
+        </div>
+    </div>
+
+    {% if cart %}
+        <div class="cart-wrapper" id="cartLayout">
+            <!-- Left: Products Table -->
+            <div class="cart-table-card" id="cartItemsCard">
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">Product</th>
+                            <th style="width: 15%;">Price</th>
+                            <th style="width: 15%;">Quantity</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in cart %}
+                            {% with product=item.product %}
+                                <tr id="cart-item-row-{{ product.id }}">
+                                    <!-- Product info -->
+                                    <td>
+                                        <div class="cart-item-info">
+                                            {% if product.image %}
+                                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="cart-item-img">
+                                            {% else %}
+                                                <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=100" alt="Placeholder" class="cart-item-img">
+                                            {% endif %}
+                                            <div>
+                                                <h4 class="cart-item-title"><a href="{{ product.get_absolute_url }}">{{ product.name }}</a></h4>
+                                                <span class="cart-item-category">{{ product.category.name }}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    <!-- Price -->
+                                    <td style="font-weight: 500; color: var(--bg-dark);">
+                                        Rs. {{ item.price }}
+                                    </td>
+                                    
+                                    <!-- Quantity form controls -->
+                                    <td>
+                                        <form action="{% url 'cart:cart_update' product.id %}" method="post" style="display: inline-block;">
+                                            {% csrf_token %}
+                                            <div class="quantity-controls">
+                                                <button type="submit" name="quantity" value="{{ item.quantity|add:'-1' }}" class="quantity-btn" aria-label="Decrease">&minus;</button>
+                                                <input type="number" class="quantity-input" value="{{ item.quantity }}" readonly aria-label="Quantity">
+                                                <button type="submit" name="quantity" value="{{ item.quantity|add:'1' }}" class="quantity-btn" aria-label="Increase">&plus;</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                    
+                                    <!-- Total item price -->
+                                    <td style="font-weight: 700; color: var(--bg-dark);">
+                                        Rs. {{ item.total_price }}
+                                    </td>
+                                    
+                                    <!-- Remove action -->
+                                    <td style="text-align: right;">
+                                        <a href="{% url 'cart:cart_remove' product.id %}" class="btn-remove" title="Remove Item" id="removeCartItemBtn-{{ product.id }}">
+                                            <i class="fa-regular fa-trash-can" style="font-size: 1.1rem;"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endwith %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div style="margin-top: 30px;">
+                    <a href="{% url 'products:product_list' %}" style="display: inline-flex; align-items: center; gap: 8px; color: var(--bg-dark); font-weight: 600; font-size: 0.95rem;">
+                        <i class="fa-solid fa-arrow-left"></i> Continue Shopping
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right: Checkout billing summary -->
+            <div class="cart-summary-card" id="cartSummaryCard">
+                <h3 style="font-size: 1.25rem; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">Order Summary</h3>
+                
+                <!-- Subtotal -->
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Subtotal</span>
+                    <strong style="color: var(--bg-dark);">Rs. {{ cart.get_subtotal_price }}</strong>
+                </div>
+                
+                <!-- Shipping -->
+                <div class="summary-row">
+                    <span style="color: var(--text-muted);">Shipping</span>
+                    {% if cart.get_shipping_price == 0 %}
+                        <strong style="color: #22c55e;">FREE</strong>
+                    {% else %}
+                        <strong style="color: var(--bg-dark);">Rs. {{ cart.get_shipping_price }}</strong>
+                    {% endif %}
+                </div>
+                
+                {% if cart.get_shipping_price > 0 %}
+                    <p style="font-size: 0.8rem; color: var(--text-muted); background-color: #f8fafc; padding: 10px; border-radius: 6px; border: 1px dashed var(--border-color); margin-bottom: 20px;">
+                        💡 Get <strong>FREE Shipping</strong> by adding items worth <strong>Rs. {{ 10000|add:-cart.get_subtotal_price }}</strong> more!
+                    </p>
+                {% endif %}
+
+                <!-- Grand Total -->
+                <div class="summary-row total">
+                    <span>Total</span>
+                    <span>Rs. {{ cart.get_total_price }}</span>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <a href="{% url 'orders:checkout' %}" class="btn-primary btn-block" style="text-align: center; display: block;" id="proceedToCheckoutBtn">Proceed to Checkout</a>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: var(--text-muted);">
+                    <i class="fa-solid fa-lock" style="font-size: 0.8rem;"></i> Secure checkout powered by Spark Sports.
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Empty cart warning screen -->
+        <div class="empty-cart-state" id="emptyCartState">
+            <div class="empty-cart-icon"><i class="fa-solid fa-shopping-basket"></i></div>
+            <h3 style="font-size: 1.5rem; margin-bottom: 10px;">Your Cart is Empty</h3>
+            <p style="color: var(--text-muted); margin-bottom: 30px; max-width: 450px; margin-left: auto; margin-right: auto;">Looks like you haven't added any cricket gear to your cart yet. Explore our premium collection to get started.</p>
+            <a href="{% url 'products:product_list' %}" class="btn-primary" style="box-shadow: none;" id="shopLinkFromEmptyCart">Shop Now</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

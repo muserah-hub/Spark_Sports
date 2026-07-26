@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Spark Sports | Pakistan's Premium Cricket Gear{% endblock %}
+
+{% block content %}
+<!-- --- Hero Section --- -->
+<section class="hero" id="homeHero">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="hero-content">
+                <h1 class="hero-title">Ignite Your Game With <span>Spark Sports</span></h1>
+                <p class="hero-subtitle">High-performance English willow bats, protective guards, and active sportswear designed for the next generation of Pakistan's cricket champions.</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'products:product_list' %}" class="btn-primary" id="heroShopBtn">Shop the Catalog</a>
+                    <a href="#featuredCategories" class="btn-secondary" id="heroCategoriesBtn">View Categories</a>
+                </div>
+            </div>
+            <div class="hero-image-wrapper">
+                <div class="hero-image-bg"></div>
+                <!-- Placeholder premium cricket image representing a spark -->
+                <img src="https://images.unsplash.com/photo-1607734834839-4436537b830d?q=80&w=600" alt="Premium Cricket Match Action" class="hero-image" id="heroFeaturedImage">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- --- Why Choose Spark Sports (USPs) --- -->
+<section class="section usps" id="whyChooseUs">
+    <div class="container">
+        <div class="section-header" style="justify-content: center; text-align: center;">
+            <div class="section-title">
+                <h2>Engineered For Champions</h2>
+                <p>What makes Spark Sports Pakistan's fastest-growing cricket equipment brand.</p>
+            </div>
+        </div>
+        <div class="usps-grid">
+            <div class="usp-card">
+                <div class="usp-icon"><i class="fa-solid fa-gem"></i></div>
+                <h3 class="usp-title">Grade 1 Willow</h3>
+                <p class="usp-desc">Hand-selected English Willow bats designed for optimal sweet-spot ping and lightweight pick-up.</p>
+            </div>
+            <div class="usp-card">
+                <div class="usp-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3 class="usp-title">Impact Protection</h3>
+                <p class="usp-desc">State-of-the-art high density foam pads and helmets tested against 150 km/h delivery impacts.</p>
+            </div>
+            <div class="usp-card">
+                <div class="usp-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <h3 class="usp-title">Swift Nation Delivery</h3>
+                <p class="usp-desc">Fast and reliable Cash on Delivery shipping across all major cities and provinces in Pakistan.</p>
+            </div>
+            <div class="usp-card">
+                <div class="usp-icon"><i class="fa-solid fa-handshake"></i></div>
+                <h3 class="usp-title">Spark Guarantee</h3>
+                <p class="usp-desc">Uncompromised quality testing. Trusted by local first-class and professional PSL players.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- --- Featured Categories Section --- -->
+<section class="section" id="featuredCategories">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-title">
+                <h2>Browse Categories</h2>
+                <p>Gear up for your role on the field.</p>
+            </div>
+            <a href="{% url 'products:product_list' %}" class="view-all">All Products <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="categories-grid">
+            <!-- Bats Card -->
+            <a href="{% url 'products:product_list' %}?category=bats" class="category-card" id="catCardBats">
+                <img src="https://images.unsplash.com/photo-1593341606579-9f97727cb3a5?q=80&w=400" alt="English Willow Bats" class="category-card-img">
+                <div class="category-card-content">
+                    <h3 class="category-card-title">English Willow Bats</h3>
+                    <span class="category-card-link">View Collection <i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+            </a>
+            <!-- Clothing Card -->
+            <a href="{% url 'products:product_list' %}?category=clothing" class="category-card" id="catCardClothing">
+                <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400" alt="Cricket Clothes" class="category-card-img">
+                <div class="category-card-content">
+                    <h3 class="category-card-title">Clothing & Jerseys</h3>
+                    <span class="category-card-link">View Collection <i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+            </a>
+            <!-- Protective Cards -->
+            <a href="{% url 'products:product_list' %}?category=pads" class="category-card" id="catCardProtective">
+                <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=400" alt="Protective Gear" class="category-card-img">
+                <div class="category-card-content">
+                    <h3 class="category-card-title">Protective Gear</h3>
+                    <span class="category-card-link">View Collection <i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- --- Featured Products Section --- -->
+<section class="section" id="featuredProducts">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-title">
+                <h2>Featured Equipment</h2>
+                <p>Selected premium gear designed to elevate your stats.</p>
+            </div>
+            <a href="{% url 'products:product_list' %}" class="view-all">Shop All <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="products-grid">
+            {% if featured_products %}
+                {% for product in featured_products %}
+                    <div class="product-card" id="prodCard-{{ product.id }}">
+                        <div class="product-image-container">
+                            {% if product.discount_price %}
+                                <span class="badge-tag sale">Sale</span>
+                            {% endif %}
+                            <a href="{% url 'products:product_detail' product.slug %}">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                                {% else %}
+                                    <img src="https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=400" alt="Product Placeholder">
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="product-details">
+                            <span class="product-category">{{ product.category.name }}</span>
+                            <h3 class="product-title"><a href="{% url 'products:product_detail' product.slug %}">{{ product.name }}</a></h3>
+                            <div class="product-price-row">
+                                {% if product.discount_price %}
+                                    <span class="price">Rs. {{ product.discount_price }}</span>
+                                    <span class="original-price">Rs. {{ product.price }}</span>
+                                {% else %}
+                                    <span class="price">Rs. {{ product.price }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-card-footer">
+                                <form action="{% url 'cart:cart_add' product.id %}" method="post">
+                                    {% csrf_on_submit %}
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button type="submit" class="btn-card-add">Add to Cart</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <!-- Fallback premium styled cards before database populated -->
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <span class="badge-tag">Featured</span>
+                        <img src="https://images.unsplash.com/photo-1593341606579-9f97727cb3a5?q=80&w=400" alt="Spark Pro Edition Bat">
+                    </div>
+                    <div class="product-details">
+                        <span class="product-category">Bats</span>
+                        <h3 class="product-title">Spark Pro Edition English Willow Bat</h3>
+                        <div class="product-price-row">
+                            <span class="price">Rs. 32,500</span>
+                        </div>
+                        <div class="product-card-footer">
+                            <a href="{% url 'products:product_list' %}" class="btn-card-add">View Products</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <span class="badge-tag sale">Sale</span>
+                        <img src="https://images.unsplash.com/photo-1540747737956-37872404a8de?q=80&w=400" alt="Spark Masterclass Pads">
+                    </div>
+                    <div class="product-details">
+                        <span class="product-category">Pads</span>
+                        <h3 class="product-title">Spark Premium Batting Pads</h3>
+                        <div class="product-price-row">
+                            <span class="price">Rs. 7,200</span>
+                            <span class="original-price">Rs. 8,500</span>
+                        </div>
+                        <div class="product-card-footer">
+                            <a href="{% url 'products:product_list' %}" class="btn-card-add">View Products</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <div class="product-image-container">
+                        <span class="badge-tag">New</span>
+                        <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=400" alt="Spark Performance Jersey">
+                    </div>
+                    <div class="product-details">
+                        <span class="product-category">Clothing</span>
+                        <h3 class="product-title">Spark Pakistan Green Performance Jersey</h3>
+                        <div class="product-price-row">
+                            <span class="price">Rs. 2,400</span>
+                        </div>
+                        <div class="product-card-footer">
+                            <a href="{% url 'products:product_list' %}" class="btn-card-add">View Products</a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- --- Promotional Banner Section --- -->
+<section class="promo-banner" id="homePromoBanner">
+    <div class="container">
+        <h2 class="promo-title">Powering Pakistan's <span>Future Internationals</span></h2>
+        <p class="promo-text">Get customized fitness and meal advice tailored to your cricket training schedule by interacting with Spark AI in the bottom right corner.</p>
+        <button class="btn-primary" onclick="document.getElementById('chatbotPanel').classList.add('open')">Chat With Spark AI</button>
+    </div>
+</section>
+
+<!-- --- Meet Spark AI Section --- -->
+<section class="section" style="background-color: white;" id="chatbotIntro">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items: center;">
+            <div>
+                <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=500" alt="Spark AI Chat Assistant" style="border-radius: 12px; box-shadow: var(--card-shadow); border: 1px solid var(--border-color);">
+            </div>
+            <div>
+                <div class="section-title" style="margin-bottom: 20px;">
+                    <h2>Meet Spark AI, Your Virtual Coach</h2>
+                </div>
+                <p style="margin-bottom: 15px;">Choosing the right weight for a cricket bat or planning your pre-match nutrition can be complex. That's why we built <strong>Spark AI</strong>, our bespoke cricket-trained chatbot assistant.</p>
+                <p style="margin-bottom: 20px;">Spark AI integrates directly with our catalog and combines cricket coaching knowledge to answer product questions, suggest gear under your budget, and draft 7-day cricket training meal plans.</p>
+                <button class="btn-primary" onclick="document.getElementById('chatbotPanel').classList.add('open')">Try Spark AI Now</button>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
